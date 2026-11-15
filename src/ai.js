@@ -83,7 +83,7 @@
             if (z < 3.0) return { x: b.x + b.vx * tc, y: me.y, volley: true };
           }
         }
-        return this.best(me, L.x, L.y, 0, 0.74 * Math.abs(b.vz - G * L.t), b.vx * 0.76, b.vy * 0.76, L.t);
+        return this.best(me, L.x, L.y, 0, g.venue.rest * Math.abs(b.vz - G * L.t), b.vx * g.venue.keep, b.vy * g.venue.keep, L.t);
       }
       return this.best(me, b.x, b.y, b.z, b.vz, b.vx, b.vy, 0);
     }

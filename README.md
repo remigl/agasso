@@ -1,6 +1,6 @@
 # Agasso Tennis Generation 2026
 
-Tennis arcade sur terre battue, à Roland-Garros. Choisis **Eric**, **Remi** ou **Corinne** et affronte **Agasso**.
+Tennis arcade en deux tournois : **Roland-Garros** (terre battue) et **Wimbledon** (gazon : rebond plus bas et plus rapide, tenues blanches). Choisis **Eric**, **Remi** ou **Corinne** et affronte **Agasso**.
 Les quatre joueurs ont exactement les mêmes statistiques : seul le jeu fait la différence.
 
 ## Jouer (Windows)

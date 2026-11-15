@@ -8,11 +8,12 @@
     bo3: { label: '3 sets', setsToWin: 2, gamesToSet: 6 },
     bo5: { label: '5 sets', setsToWin: 3, gamesToSet: 6 },
   };
-  const opt = { player: 'remi', diff: 'normal', format: 'express', sound: true, voice: true };
+  const opt = { player: 'remi', venue: 'rg', diff: 'normal', format: 'express', sound: true, voice: true };
   try { Object.assign(opt, JSON.parse(localStorage.getItem('agasso-options') || '{}')); } catch (e) { /* stockage indisponible */ }
   if (!A.SELECTABLE.includes(opt.player)) opt.player = 'remi';
   if (!A.DIFFICULTY[opt.diff]) opt.diff = 'normal';
   if (!FORMATS[opt.format]) opt.format = 'express';
+  if (!A.VENUES[opt.venue]) opt.venue = 'rg';
   const save = () => { try { localStorage.setItem('agasso-options', JSON.stringify(opt)); } catch (e) { /* idem */ } };
 
   const renderer = new A.Renderer($('#game'));
@@ -21,20 +22,30 @@
 
   // ---------- Parties ----------
   function startDemo() { // match IA contre IA en fond de menu
-    game = new A.Game({ playerId: opt.player, setsToWin: 3 });
+    applyVenue();
+    game = new A.Game({ playerId: opt.player, setsToWin: 3, venue: opt.venue });
     ais = [new A.AI(0, 'difficile'), new A.AI(1, 'difficile')];
     human = -1; renderer.clearMarks();
   }
   function startMatch() {
     const f = FORMATS[opt.format];
-    game = new A.Game({ playerId: opt.player, setsToWin: f.setsToWin, gamesToSet: f.gamesToSet, firstServer: 0 });
+    applyVenue();
+    game = new A.Game({ playerId: opt.player, setsToWin: f.setsToWin, gamesToSet: f.gamesToSet, firstServer: 0, venue: opt.venue });
     ais = [null, new A.AI(1, opt.diff)];
     human = 0; renderer.clearMarks(); acc = 0;
     Au.init(); Au.setEnabled(opt.sound); Au.setVoice(opt.voice); Au.ambience(true);
-    show('match'); updateScore(); banner('ROLAND-GARROS', names()[0] + ' – ' + names()[1], 2.2);
+    show('match'); updateScore(); banner(A.VENUES[opt.venue].name.toUpperCase(), names()[0] + ' – ' + names()[1], 2.2);
     Au.cheer(1);
   }
   const names = () => game.players.map((p) => p.def.name);
+  // Décor, couleurs d'interface et tenues selon le tournoi choisi.
+  function applyVenue() {
+    const v = A.VENUES[opt.venue], st = document.documentElement.style;
+    renderer.setVenue(opt.venue);
+    document.body.dataset.venue = v.id;
+    st.setProperty('--clay', v.accent); st.setProperty('--clay-deep', v.accentDeep); st.setProperty('--kick', v.kick); st.setProperty('--surface', v.court);
+    $('#kicker').textContent = v.name + ' · ' + v.surface + ' · ' + v.city + ' 2026';
+  }
 
   // ---------- Écrans ----------
   function show(name) {
@@ -71,8 +82,7 @@
       const el = document.createElement(cpu ? 'div' : 'button');
       el.className = 'card' + (cpu ? ' cpu' : ''); if (!cpu) { el.dataset.nav = ''; el.dataset.player = id; }
       el.innerHTML = `<canvas width="300" height="315"></canvas><div class="nm">${A.PLAYERS[id].name}</div>${bars}`;
-      const c = el.querySelector('canvas').getContext('2d');
-      A.Renderer.prototype.figure.call(null, c, { x: 150, y: 296, s: 150 }, A.PLAYERS[id].look, { away: false, fh: -1 });
+      el.querySelector('canvas').dataset.portrait = id;
       return el;
     };
     for (const id of A.SELECTABLE) cards.appendChild(mk(id, false));
@@ -83,11 +93,18 @@
       for (const [k, label] of entries) { const b = document.createElement('button'); b.textContent = label; b.dataset.nav = ''; b.dataset.val = k; host.appendChild(b); }
       host.addEventListener('click', (e) => { const b = e.target.closest('[data-val]'); if (b) { opt[key] = b.dataset.val; save(); Au.ui(); refreshSelect(); } });
     };
+    seg($('#seg-venue'), Object.values(A.VENUES).map((v) => [v.id, v.name]), 'venue');
     seg($('#seg-diff'), Object.entries(A.DIFFICULTY).map(([k, v]) => [k, v.label]), 'diff');
     seg($('#seg-format'), Object.entries(FORMATS).map(([k, v]) => [k, v.label]), 'format');
     refreshSelect();
   }
   function refreshSelect() {
+    if (renderer.venue.id !== opt.venue) startDemo();
+    document.querySelectorAll('#seg-venue [data-val]').forEach((b) => b.classList.toggle('on', b.dataset.val === opt.venue));
+    document.querySelectorAll('[data-portrait]').forEach((cv) => {
+      const c = cv.getContext('2d'); c.clearRect(0, 0, cv.width, cv.height);
+      A.Renderer.figure(c, { x: 168, y: 300, s: 152 }, renderer.lookFor(A.PLAYERS[cv.dataset.portrait]), { away: false, fh: -1 });
+    });
     document.querySelectorAll('[data-player]').forEach((c) => c.classList.toggle('sel', c.dataset.player === opt.player));
     document.querySelectorAll('#seg-diff [data-val]').forEach((b) => b.classList.toggle('on', b.dataset.val === opt.diff));
     document.querySelectorAll('#seg-format [data-val]').forEach((b) => b.classList.toggle('on', b.dataset.val === opt.format));

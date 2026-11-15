@@ -9,6 +9,7 @@
 </head>
 <body>
 <canvas id="game"></canvas>
+<div id="vignette"></div>
 
 <div id="hud" class="hidden">
   <div id="score"></div>
@@ -19,7 +20,7 @@
 
 <section id="title" class="screen">
   <div class="brand">
-    <div class="kicker">Roland-Garros · Terre battue · Paris 2026</div>
+    <div class="kicker" id="kicker"></div>
     <h1>AGASSO</h1>
     <div class="sub">Tennis Generation</div>
   </div>
@@ -43,6 +44,7 @@
   <p class="note">Mêmes statistiques pour tout le monde, Agasso compris : seul ton jeu fait la différence.</p>
   <div class="cards" id="cards"></div>
   <div class="opts">
+    <div class="opt"><label>Tournoi</label><div class="seg" id="seg-venue"></div></div>
     <div class="opt"><label>Difficulté</label><div class="seg" id="seg-diff"></div></div>
     <div class="opt"><label>Format</label><div class="seg" id="seg-format"></div></div>
   </div>

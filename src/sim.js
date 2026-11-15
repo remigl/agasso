@@ -14,6 +14,7 @@
     constructor(opts) {
       const o = opts || {};
       this.rng = o.rng || Math.random;
+      this.venue = A.VENUES[o.venue] || A.VENUES.rg;
       this.ids = [o.playerId || 'remi', 'agasso'];
       this.players = this.ids.map((id, i) => ({
         i, id, def: A.PLAYERS[id], stats: A.PLAYERS[id].stats,
@@ -211,13 +212,20 @@
       }
       if (b.z <= 0 && b.vz < 0) {
         b.z = 0;
-        this.emit('bounce', { x: b.x, y: b.y, v: Math.abs(b.vz), live: b.live });
+        this.emit('bounce', { x: b.x, y: b.y, v: Math.abs(b.vz), live: b.live, line: this.onLine(b.x, b.y) });
         if (b.live) this.onBounce();
-        b.vz = -b.vz * 0.74; b.vx *= 0.76; b.vy *= 0.76;
+        b.vz = -b.vz * this.venue.rest; b.vx *= this.venue.keep; b.vy *= this.venue.keep;
         if (b.vz < 0.7) { b.vz = 0; b.vx *= 0.9; b.vy *= 0.9; }
       }
       if (Math.abs(b.y) > 18.6) { b.y = Math.sign(b.y) * 18.6; b.vy *= -0.3; }
       if (Math.abs(b.x) > 10.6) { b.x = Math.sign(b.x) * 10.6; b.vx *= -0.3; }
+    }
+
+    // La balle touche-t-elle une ligne ? (pour la craie qui vole)
+    onLine(x, y) {
+      const c = COURT, ax = Math.abs(x), ay = Math.abs(y), w = 0.09;
+      if (ax > c.halfW + w || ay > c.halfL + w) return false;
+      return Math.abs(ax - c.halfW) < w || Math.abs(ay - c.halfL) < w || Math.abs(ay - c.service) < w || (ax < w && ay < c.service);
     }
 
     onBounce() {

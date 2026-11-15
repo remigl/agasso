@@ -63,3 +63,22 @@ test('IA équilibrée : à niveau égal aucun camp n’est favorisé, et la diff
   assert.ok(even[0] >= 3 && even[1] >= 3, 'normal vs normal : ' + even);
   assert.ok(hard >= 5, 'difficile bat facile : ' + hard + '/6');
 });
+
+test('deux tournois : mêmes stats, mais le gazon rebondit plus bas et plus vite que la terre', () => {
+  const { rg, wim } = A.VENUES;
+  assert.ok(wim.rest < rg.rest && wim.keep > rg.keep);
+  const drop = (venue) => {
+    const g = new A.Game({ venue, rng: rngFrom(1) }), b = g.ball;
+    Object.assign(b, { held: false, live: false, x: 0, y: 5, z: 2, vx: 0, vy: 10, vz: 0 });
+    while (b.vz <= 0) g.stepBall(A.DT);
+    return { vy: b.vy, vz: b.vz };
+  };
+  const clay = drop('rg'), grass = drop('wim');
+  assert.ok(grass.vy > clay.vy && grass.vz < clay.vz);
+  for (const id of ['rg', 'wim']) assert.strictEqual(new A.Game({ venue: id }).players[1].stats, A.STATS);
+});
+
+test('un match IA contre IA va au bout à Wimbledon', () => {
+  const { g } = playMatch(777, 'normal', 'normal', 1, 'wim');
+  assert.strictEqual(g.phase, 'done'); assert.strictEqual(g.venue.id, 'wim');
+});
