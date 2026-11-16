@@ -33,7 +33,7 @@ if (require.main === module) {
     for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) { const s = series(ids[i], ids[j], n, venue, 'normal'); score[ids[i]] += s.wins[0]; score[ids[j]] += s.wins[1]; }
     const tot = (ids.length - 1) * n;
     console.log(`Ligue sur ${venue} (${n} set(s) par duel) :`);
-    for (const [id, w] of Object.entries(score).sort((x, y) => y[1] - x[1])) console.log(`  ${id.padEnd(12)} ${String(Math.round((100 * w) / tot)).padStart(3)} %  (note ${A.Players.rating(A.Players.profile(id), A.get('venue', venue)).toFixed(1)})`);
+    for (const [id, w] of Object.entries(score).sort((x, y) => y[1] - x[1])) console.log(`  ${id.padEnd(12)} ${String(Math.round((100 * w) / tot)).padStart(3)} %  (note ${A.Players.rating(A.Players.profile(id), A.Venues.get(venue)).toFixed(1)})`);
   } else {
     const [a = 'remi', b = 'agasso', n = 20, venue = 'roland-garros', d = 'normal'] = arg, s = series(a, b, +n, venue, d);
     console.log(`[${venue}] ${a} ${s.wins[0]} – ${s.wins[1]} ${b} · échange moyen ${s.avgRally.toFixed(1)} frappes · ${s.minutes.toFixed(1)} min/set`);

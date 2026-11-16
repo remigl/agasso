@@ -64,7 +64,7 @@
 
   function tournaments(o) {
     const cards = A.all('tournament').map((t) => {
-      const v = A.need('venue', t.venue), save = o.save && o.save.tid === t.id && o.save.status === 'active' ? o.save : null;
+      const v = A.Venues.get(t.venue), save = o.save && o.save.tid === t.id && o.save.status === 'active' ? o.save : null;
       return `<div class="tcard" style="--c:${v.look.accent}"><div class="kicker">${esc(v.surfaceLabel)} · ${esc(v.city)}</div><h3>${esc(t.name)}</h3>
         <p>${t.drawSize} joueurs · ${t.rounds.length} tours · élimination directe</p>
         ${save ? btn('Continuer — ' + A.Tournament.roundName(save, save.round), 'tour-continue', 'primary') : ''}${btn(save ? 'Recommencer' : 'Participer', 'tour-new', save ? '' : 'primary', { id: t.id })}</div>`;
@@ -120,18 +120,31 @@
     portrait($('canvas', host), id, venue);
   }
 
+  // Fiche d'un terrain : tout vient de sa configuration (content/venues/venues.js).
+  function venueInfo(v) {
+    const w = v.physics.wind, wind = Math.hypot(w[0], w[1]);
+    const rows = [['Surface', v.surfaceLabel], ['Vitesse', v.speed + ' / 10'], ['Rebond', v.bounce + ' / 10'], ['Éclairage', v.lightingLabel], ['Météo', v.weather.label + ' · ' + v.weather.temperature + ' °C' + (wind > 0.05 ? ' · vent ' + wind.toFixed(1) + ' m/s' : '')],
+      ['Stade', v.styleLabel + ' · ' + v.capacity.toLocaleString('fr-FR') + ' places'], ['Prestige', '★'.repeat(v.prestige) + '☆'.repeat(5 - v.prestige)]];
+    if (v.tournament && A.get('tournament', v.tournament)) rows.push(['Tournoi', A.get('tournament', v.tournament).name]);
+    return `<div class="kicker">${esc([v.city, v.country].filter(Boolean).join(' · ') || 'Court générique')}</div><h3>${esc(v.name)}</h3>
+      <div class="vrows">${rows.map(([l, x]) => `<div><span>${l}</span><b>${esc(x)}</b></div>`).join('')}</div>${v.conditions ? `<p>${esc(v.conditions)}</p>` : ''}`;
+  }
+
   function setup(o) {
-    const side = (id, lab) => { const d = A.need('player', id); return `<div class="vs-side"><canvas width="300" height="380" data-portrait="${id}"></canvas><div class="kicker">${lab}</div><h3>${esc(d.name)}</h3><div class="arch">${esc(A.Players.profile(id).archetype.label)}</div></div>`; };
+    const side = (id, lab) => { const d = A.need('player', id); return `<div class="vs-side"><canvas width="300" height="380" data-portrait="${id}"></canvas><div class="kicker">${lab}</div><h3>${esc(d.short || d.name)}</h3></div>`; };
     const seg = (act, list, cur) => `<div class="seg">${list.map(([k, l]) => `<button data-nav data-act="${act}" data-val="${k}" class="${k === cur ? 'on' : ''}">${esc(l)}</button>`).join('')}</div>`;
+    const all = A.Venues.all();
+    const groups = A.VENUE_CATEGORIES.map(([cat, label]) => { const vs = all.filter((v) => v.category === cat); return vs.length ? `<label>${label}</label><div class="vbtns">${vs.map((v) => `<button data-nav data-act="set-venue" data-val="${v.id}" class="${v.id === o.venue.id ? 'on' : ''}"><i style="background:${v.look.court}"></i>${esc(v.name)}</button>`).join('')}</div>` : ''; }).join('');
     el.setup.innerHTML = `<header><div class="kicker">Match amical</div><h2>Avant-match</h2></header>
-      <div class="vs">${side(o.player, 'Toi')}<div class="vs-x">VS</div>${side(o.opponent, 'Adversaire')}</div>
-      <div class="opts"><div><label>Terrain</label>${seg('set-venue', A.all('venue').map((v) => [v.id, v.name + ' · ' + v.surfaceLabel]), o.venue.id)}</div><div><label>Format</label>${seg('set-format', Object.entries(A.FORMATS).map(([k, f]) => [k, f.label]), o.format)}</div></div>
+      <div class="setup-body"><div class="vs">${side(o.player, 'Toi')}<div class="vs-x">VS</div>${side(o.opponent, 'Adversaire')}</div>
+        <div class="vlist">${groups}</div><aside class="vinfo">${venueInfo(o.venue)}</aside></div>
+      <div class="opts"><div><label>Format</label>${seg('set-format', Object.entries(A.FORMATS).map(([k, f]) => [k, f.label]), o.format)}</div></div>
       <nav class="menu row">${btn('Retour', 'back')}<button class="btn primary" data-nav data-focus data-act="start">Entrer sur le court</button></nav>`;
     $$('[data-portrait]', el.setup).forEach((cv) => portrait(cv, cv.dataset.portrait, o.venue));
   }
 
   function bracket(st) {
-    const def = A.need('tournament', st.tid), venue = A.need('venue', def.venue), cur = A.Tournament.current(st), nm = (id) => A.need('player', id).short || A.need('player', id).name;
+    const def = A.need('tournament', st.tid), venue = A.Venues.get(def.venue), cur = A.Tournament.current(st), nm = (id) => A.need('player', id).short || A.need('player', id).name;
     let cols = '';
     for (let r = 0; r < def.rounds.length; r++) {
       const n = def.drawSize >> (r + 1), ms = st.rounds[r] || Array.from({ length: n }, () => null);

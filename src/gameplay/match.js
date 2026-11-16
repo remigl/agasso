@@ -11,7 +11,7 @@
     constructor(opts) {
       const o = opts || {}, ids = o.players || ['remi', 'agasso'];
       this.rng = o.rng || Math.random;
-      this.venue = A.get('venue', o.venue) || A.all('venue')[0];
+      this.venue = A.Venues.get(o.venue || A.Venues.ids()[0]); // toutes les caractéristiques du terrain viennent des données
       this.players = ids.map((id, i) => {
         const profile = A.Players.profile(id);
         return { i, id, profile, def: profile.def, a: A.Players.attrs(profile, this.venue), sgn: i === 0 ? 1 : -1, x: 0, y: 0, vx: 0, vy: 0, swing: null, run: 0, inp: EMPTY, tilt: 0 };
@@ -101,7 +101,7 @@
     strike(p, shot) {
       const b = this.ball;
       b.lastHitter = p.i; b.bounces = 0; b.netHit = false; b.hitId++; b.spin = shot.spin;
-      Ph.launch(b, shot.tx, shot.ty, shot.speed, shot.clear);
+      Ph.launch(b, shot.tx, shot.ty, shot.speed * this.venue.physics.pace, shot.clear);
     }
 
     doServe(P, kind) {
@@ -147,7 +147,9 @@
 
     stepBall(dt) {
       const b = this.ball, c = COURT, py = b.y;
+      const wind = this.venue.physics.wind;
       b.vz -= G * dt;
+      if (b.z > 0.05) { b.vx += wind[0] * 0.12 * dt; b.vy += wind[1] * 0.12 * dt; } // le vent dévie la balle en vol
       b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt;
       if (py * b.y <= 0 && py !== b.y && Math.abs(b.x) < c.postX && b.z < Ph.netHeightAt(b.x)) {
         b.y = (py >= 0 ? 1 : -1) * 0.06; b.vy *= -0.12; b.vx *= 0.3; b.vz *= 0.3; b.netHit = true; b.spin = 0;

@@ -11,7 +11,7 @@
       const k = venue.look;
       if (e.type === 'bounce' && e.v > 1.2) {
         if (k.mark) { this.marks.push({ x: e.x, y: e.y, a: 0.2 + Math.min(0.25, e.v * 0.03) }); if (this.marks.length > 90) this.marks.shift(); }
-        const n = e.line ? 12 : k.mark ? 9 : 3, col = e.line ? '255,255,255' : k.dust;
+        const chalk = e.line && k.grain !== 'hard', n = chalk ? 12 : !k.dust ? 0 : k.mark ? 9 : 3, col = chalk ? '255,255,255' : k.dust; // pas de poussière sur dur
         for (let i = 0; i < n; i++) this.parts.push({ x: e.x, y: e.y, z: 0.05, vx: (Math.random() - 0.5) * 2.6, vy: (Math.random() - 0.5) * 2.6, vz: 0.6 + Math.random() * 1.6, t: 0, life: 0.5 + Math.random() * 0.45, col });
       } else if (e.type === 'hit') {
         this.pops.push({ x: e.x, y: e.y, z: e.z, t: 0, ring: true, big: e.kind === 'smash' });

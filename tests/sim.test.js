@@ -15,24 +15,23 @@ test('contenu : chaque fiche joueur est complète et référence un archétype e
     assert.ok(A.get('celebration', d.celebration), id + ' célébration');
     assert.ok(p.tech.forehand.pace > 0 && p.ai.depth >= 0);
   }
-  for (const t of A.all('tournament')) assert.ok(A.get('venue', t.venue) && t.rounds.length === Math.log2(t.drawSize));
-  for (const v of A.all('venue')) assert.ok(v.physics.rest > 0 && v.look.court);
+  for (const t of A.all('tournament')) assert.ok(A.Venues.get(t.venue) && t.rounds.length === Math.log2(t.drawSize));
   assert.ok(A.all('music').some((m) => m.role === 'menu') && A.all('music').some((m) => m.role === 'victory'));
 });
 
 test('les personnages originaux gardent des statistiques identiques entre eux', () => {
-  const venue = A.get('venue', 'roland-garros'), ref = JSON.stringify(A.Players.attrs(A.Players.profile('eric'), venue));
+  const venue = A.Venues.get('roland-garros'), ref = JSON.stringify(A.Players.attrs(A.Players.profile('eric'), venue));
   for (const id of ['remi', 'corinne', 'agasso']) assert.strictEqual(JSON.stringify(A.Players.attrs(A.Players.profile(id), venue)), ref);
 });
 
 test('statistiques 1–10 : effet réel mais borné sur les attributs', () => {
-  const venue = A.get('venue', 'roland-garros'), base = A.Players.attrs(A.Players.profile('eric'), venue);
+  const venue = A.Venues.get('roland-garros'), base = A.Players.attrs(A.Players.profile('eric'), venue);
   const lendl = A.Players.attrs(A.Players.profile('lendl'), venue), sanchez = A.Players.attrs(A.Players.profile('sanchez'), venue);
   assert.ok(lendl.flat > base.flat && lendl.flat < base.flat * 1.08, 'force');
   assert.ok(sanchez.speed > base.speed && sanchez.speed < base.speed * 1.08, 'rapidité');
   assert.ok(sanchez.defense < base.defense && lendl.serve1 > base.serve1);
   const nadal = A.Players.profile('nadal');
-  assert.ok(A.Players.attrs(nadal, venue).control < A.Players.attrs(nadal, A.get('venue', 'wimbledon')).control, 'affinité terre battue');
+  assert.ok(A.Players.attrs(nadal, venue).control < A.Players.attrs(nadal, A.Venues.get('wimbledon')).control, 'affinité terre battue');
 });
 
 test('signature : la technique du joueur change réellement la balle frappée', () => {
@@ -80,7 +79,7 @@ test('lancer non frappé : la balle est rattrapée, sans faute', () => {
 });
 
 test('terrains : le gazon rebondit plus bas et plus vite que la terre ; l’effet module le rebond', () => {
-  const rg = A.get('venue', 'roland-garros'), wim = A.get('venue', 'wimbledon');
+  const rg = A.Venues.get('roland-garros'), wim = A.Venues.get('wimbledon');
   assert.ok(wim.physics.rest < rg.physics.rest && wim.physics.keep > rg.physics.keep);
   assert.ok(A.Physics.bounce(rg, 0.9).rest > A.Physics.bounce(rg, 0).rest && A.Physics.bounce(rg, -0.8).rest < A.Physics.bounce(rg, 0).rest);
 });
@@ -108,4 +107,36 @@ test('les statistiques ne décident pas tout : un personnage original peut battr
   let wins = 0;
   for (let i = 0; i < 14; i++) if (playMatch(900 + i * 53, { players: ['eric', 'federer'], gamesToSet: 4 }).g.match.winner === 0) wins++;
   assert.ok(wins >= 1 && wins <= 12, 'victoires d’Eric : ' + wins + '/14');
+});
+
+test('terrains : les 24 terrains demandés existent, complets, sur une surface générique', () => {
+  const all = A.Venues.all(), ids = all.map((v) => v.id);
+  for (const id of ['roland-garros', 'wimbledon', 'us-open', 'australian-open', 'arthur-ashe', 'philippe-chatrier', 'suzanne-lenglen', 'centre-court', 'rod-laver', 'foro-italico', 'monte-carlo', 'caja-magica',
+    'indian-wells', 'miami', 'cincinnati', 'shanghai', 'tokyo', 'paris-bercy', 'indoor-court', 'outdoor-hard', 'night-hard', 'night-clay', 'small-clay', 'small-grass']) assert.ok(ids.includes(id), id);
+  assert.deepStrictEqual(A.all('surface').map((s) => s.id).sort(), ['clay', 'grass', 'hard', 'indoor_hard']);
+  for (const v of all) {
+    assert.ok(v.name && v.surfaceLabel && v.physics.rest > 0.5 && v.physics.keep > 0.6 && v.physics.pace > 0.9, v.id);
+    assert.ok(v.look.court && v.look.wall && v.stadium.rowsBack > 0 && v.lighting.time && v.weather.label && v.capacity > 0 && v.prestige >= 1 && v.crowd > 0, v.id);
+    if (v.tournament) assert.ok(A.get('tournament', v.tournament), v.id + ' → tournoi ' + v.tournament);
+    if (v.stadium.indoor) assert.deepStrictEqual(v.physics.wind, [0, 0], v.id + ' : pas de vent en salle');
+  }
+  const k = (id) => A.Venues.get(id).physics.keep;
+  assert.ok(k('roland-garros') < k('us-open') && k('us-open') < k('wimbledon'), 'terre < dur < gazon');
+  assert.ok(A.Venues.get('caja-magica').physics.pace > 1 && A.Venues.get('night-clay').physics.rest < A.Venues.get('small-clay').physics.rest);
+  assert.strictEqual(A.Venues.get('paris-bercy').family, 'hard');
+});
+
+test('ajouter un terrain = une entrée de données : le moteur le joue sans autre changement', () => {
+  A.define('venue', { id: 'test-altiplano', name: 'Court test', surface: 'hard', speed: 9, bounce: 3, physics: { pace: 1.1 }, weather: { label: 'Venteux', temperature: 10, wind: [4, 0] } });
+  const v = A.Venues.get('test-altiplano');
+  assert.ok(Math.abs(v.physics.keep - A.Venues.keepOf(9)) < 1e-9 && Math.abs(v.physics.rest - A.Venues.restOf(3)) < 1e-9);
+  assert.strictEqual(v.stadium.rowsBack, A.get('stadium', 'stadium').rowsBack); assert.strictEqual(v.lighting.time, 'day');
+  const g = new A.Game({ players: ['eric', 'agasso'], venue: 'test-altiplano', rng: A.rngFrom(1) }), b = g.ball;
+  assert.strictEqual(g.venue, v);
+  Object.assign(b, { held: false, live: false, x: 0, y: 5, z: 3, vx: 0, vy: 0, vz: 0 });
+  for (let i = 0; i < 60; i++) g.stepBall(A.DT);
+  assert.ok(b.x > 0.02, 'le vent du terrain dévie la balle');
+  const { g: played } = playMatch(31, { players: ['eric', 'agasso'], venue: 'test-altiplano', gamesToSet: 4 });
+  assert.strictEqual(played.phase, 'done');
+  delete A.registry.venue['test-altiplano'];
 });

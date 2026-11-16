@@ -1001,6 +1001,23 @@ Agasso.define('player', {
   },
 });
 
+// --- tournaments/australian-open.js
+Agasso.define('tournament', {
+  id: 'australian-open',
+  order: 3,
+  name: 'Australian Open',
+  venue: 'australian-open',
+  drawSize: 16,
+  field: 'all',
+  rounds: [
+    { name: 'Huitièmes de finale', format: 'express' },
+    { name: 'Quarts de finale', format: 'express' },
+    { name: 'Demi-finales', format: 'set1' },
+    { name: 'Finale', format: 'set1' },
+  ],
+  trophy: 'Trophée du vainqueur',
+});
+
 // --- tournaments/roland-garros.js
 // Tournoi : tableau à élimination directe. `field` = 'all' ou une liste d'ids de joueurs ; un format par tour.
 Agasso.define('tournament', {
@@ -1017,6 +1034,23 @@ Agasso.define('tournament', {
     { name: 'Finale', format: 'set1' },
   ],
   trophy: 'Coupe du vainqueur',
+});
+
+// --- tournaments/us-open.js
+Agasso.define('tournament', {
+  id: 'us-open',
+  order: 2,
+  name: 'US Open',
+  venue: 'us-open',
+  drawSize: 16,
+  field: 'all',
+  rounds: [
+    { name: 'Huitièmes de finale', format: 'express' },
+    { name: 'Quarts de finale', format: 'express' },
+    { name: 'Demi-finales', format: 'set1' },
+    { name: 'Finale', format: 'set1' },
+  ],
+  trophy: 'Trophée du vainqueur',
 });
 
 // --- tournaments/wimbledon.js
@@ -1036,65 +1070,145 @@ Agasso.define('tournament', {
   trophy: 'Trophée du vainqueur',
 });
 
-// --- venues/roland-garros.js
-// Terrain : `physics` est lu par le gameplay, `look` uniquement par le rendu.
-Agasso.define('venue', {
-  id: 'roland-garros',
-  order: 0,
-  name: 'Roland-Garros',
-  city: 'Paris',
-  surface: 'clay',
-  surfaceLabel: 'Terre battue',
-  physics: { rest: 0.74, keep: 0.76 },
-  look: {
-    whites: false,
-    court: '#c2603a',
-    courtDark: '#ad5230',
-    courtLight: '#d1744b',
-    wall: '#0d4a37',
-    wallDark: '#093527',
-    trim: '#c9553d',
-    seat: '#2b5a4c',
-    dust: '214,146,104',
-    mark: '112,46,18',
-    sky: ['#5f9fd6', '#cfe2ee'],
-    parasol: '#f1ece2',
-    roof: '#e4e7e9',
-    stripes: false,
-    wear: '255,205,170',
-    accent: '#d9663a',
-    accentDeep: '#a8431c',
-    kick: '#ffd9c2',
-  },
+// --- venues/presets.js
+// Préréglages réutilisables par les terrains : style de stade et éclairage.
+// Un terrain les référence (`style: 'arena'`, `lighting: 'night'`) et peut en surcharger chaque champ.
+
+// --- Styles de stade ---
+//   rowsBack / rowsSide : rangées de gradins ; upperAt : rangée où commence le second niveau (0 = aucun)
+//   fill : taux de remplissage du public ; backdrop : 'trees' | 'sea' | 'city' | 'hills' | null
+Agasso.define('stadium', { id: 'arena', label: 'Grand stade', rowsBack: 24, upperAt: 12, rowsSide: 20, roof: true, indoor: false, fill: 0.95, flags: true, benches: true, flowers: true, backdrop: null, camera: null });
+Agasso.define('stadium', { id: 'stadium', label: 'Stade', rowsBack: 15, upperAt: 0, rowsSide: 13, roof: false, indoor: false, fill: 0.9, flags: true, benches: true, flowers: true, backdrop: 'city', camera: null });
+Agasso.define('stadium', { id: 'club', label: 'Court de club', rowsBack: 4, upperAt: 0, rowsSide: 3, roof: false, indoor: false, fill: 0.6, flags: false, benches: true, flowers: false, backdrop: 'trees', camera: null });
+Agasso.define('stadium', { id: 'indoor', label: 'Salle', rowsBack: 22, upperAt: 11, rowsSide: 18, roof: false, indoor: true, fill: 0.95, flags: false, benches: true, flowers: false, backdrop: null, camera: null });
+Agasso.define('stadium', { id: 'hall', label: 'Petite salle', rowsBack: 6, upperAt: 0, rowsSide: 5, roof: false, indoor: true, fill: 0.7, flags: false, benches: true, flowers: false, backdrop: null, camera: null });
+
+// --- Éclairages ---
+//   sun : décalage de l'ombre au sol par mètre de hauteur (null = pas de soleil) ; shadow : opacité des ombres
+//   standShadow : grande ombre de tribune sur le court ; floodlights : projecteurs (ombres multiples)
+//   dim : assombrissement des tribunes ; sky / clouds / stars : ciel ; glow : teinte de la lumière sur le court
+Agasso.define('lighting', { id: 'day', label: 'Jour', time: 'day', sun: [-0.55, 0.3], shadow: 0.27, standShadow: true, floodlights: false, dim: 0, sky: null, clouds: 6, stars: false, glow: '255,232,188' });
+Agasso.define('lighting', { id: 'overcast', label: 'Couvert', time: 'day', sun: null, shadow: 0.16, standShadow: false, floodlights: false, dim: 0.08, sky: ['#8f9aa5', '#cfd5da'], clouds: 14, stars: false, glow: '225,230,235' });
+Agasso.define('lighting', { id: 'dusk', label: 'Fin de journée', time: 'dusk', sun: [-1.15, 0.45], shadow: 0.3, standShadow: true, floodlights: true, dim: 0.14, sky: ['#3f5f9a', '#f2b27a'], clouds: 4, stars: false, glow: '255,200,140' });
+Agasso.define('lighting', { id: 'night', label: 'Nuit', time: 'night', sun: null, shadow: 0.11, standShadow: false, floodlights: true, dim: 0.56, sky: ['#050814', '#1a2340'], clouds: 0, stars: true, glow: '230,238,255' });
+Agasso.define('lighting', { id: 'indoor', label: 'Salle', time: 'indoor', sun: null, shadow: 0.11, standShadow: false, floodlights: true, dim: 0.5, sky: ['#090b10', '#1b2029'], clouds: 0, stars: false, glow: '235,240,255' });
+
+// --- venues/surfaces.js
+// Surfaces génériques. Un terrain choisit sa surface par son id ; le moteur ne connaît que ces données.
+//   speed  (1–10) : vitesse conservée au rebond — 1 = très lent, 10 = très rapide
+//   bounce (1–10) : hauteur du rebond — 1 = très bas, 10 = très haut
+//   physics.traction : accroche des appuis (1 = normale, moins = on glisse)
+//   physics.pace     : vitesse de balle dans l'air (1 = normale)
+//   family : sert à l'affinité des joueurs (`surfaces: { clay: 1 }` dans leur fiche)
+//   look   : aspect par défaut du court (le terrain peut tout surcharger)
+Agasso.define('surface', {
+  id: 'clay', label: 'Terre battue', family: 'clay', speed: 3, bounce: 10, physics: { traction: 0.9 },
+  look: { court: '#c2603a', courtLight: '#d1744b', apron: null, grain: 'clay', stripes: false, dust: '214,146,104', mark: '112,46,18', wear: '255,205,170' },
+});
+Agasso.define('surface', {
+  id: 'grass', label: 'Gazon', family: 'grass', speed: 7.5, bounce: 5, physics: { traction: 0.95 },
+  look: { court: '#4b8a3a', courtLight: '#589646', apron: null, grain: 'grass', stripes: true, dust: '214,226,170', mark: null, wear: '176,150,92' },
+});
+Agasso.define('surface', {
+  id: 'hard', label: 'Dur', family: 'hard', speed: 5.5, bounce: 8, physics: { traction: 1 },
+  look: { court: '#2f5f9e', courtLight: null, apron: '#3f7d57', grain: 'hard', stripes: false, dust: null, mark: null, wear: null },
+});
+Agasso.define('surface', {
+  id: 'indoor_hard', label: 'Dur indoor', family: 'hard', speed: 7, bounce: 7, physics: { traction: 1 },
+  look: { court: '#34507f', courtLight: null, apron: '#2a3442', grain: 'hard', stripes: false, dust: null, mark: null, wear: null },
 });
 
-// --- venues/wimbledon.js
-Agasso.define('venue', {
-  id: 'wimbledon',
-  order: 1,
-  name: 'Wimbledon',
-  city: 'Londres',
-  surface: 'grass',
-  surfaceLabel: 'Gazon',
-  physics: { rest: 0.64, keep: 0.85 },
-  look: {
-    whites: true,
-    court: '#4b8a3a',
-    courtDark: '#417a32',
-    courtLight: '#589646',
-    wall: '#143c2b',
-    wallDark: '#0c2a1e',
-    trim: '#6f47a8',
-    seat: '#1f4b37',
-    dust: '214,226,170',
-    mark: null,
-    sky: ['#7aaad2', '#e1e9ee'],
-    parasol: '#1d5a3c',
-    roof: '#dce2df',
-    stripes: true,
-    wear: '176,150,92',
-    accent: '#6f47a8',
-    accentDeep: '#45246e',
-    kick: '#e2d3f7',
-  },
-});
+// --- venues/venues.js
+// TOUS LES TERRAINS DU JEU. Ajouter un terrain = ajouter une entrée ici, rien d'autre.
+//
+// Minimum : { id, name, surface }. Tout le reste a une valeur par défaut (surface, style de stade, éclairage).
+// Champs disponibles :
+//   name, city, country, flag          identité
+//   category                           'grand-slam' | 'iconic' | 'extra' (regroupement dans le menu)
+//   surface                            id d'une surface de surfaces.js : clay | grass | hard | indoor_hard
+//   speed, bounce                      1–10, remplacent ceux de la surface (vitesse et hauteur du rebond)
+//   physics { pace, traction, rest, keep }   réglages fins de gameplay propres au terrain
+//   weather { label, temperature, wind: [x, y] en m/s }   météo ; le vent dévie la balle
+//   conditions                         texte libre (altitude, humidité…)
+//   lighting                           id d'un éclairage de presets.js : day | overcast | dusk | night | indoor
+//   light { … }                        surcharges de cet éclairage (soleil, ombres, ciel, nuages…)
+//   style                              id d'un style de stade : arena | stadium | club | indoor | hall
+//   stadium { … }                      surcharges de ce style (rangées, toit, décor, backdrop, wallText…)
+//   capacity                           spectateurs : règle aussi le volume du public
+//   ambience { crowd }                 niveau sonore du public (0–1,2) si l'on veut l'imposer
+//   look { court, apron, wall, seat, accent, … }   couleurs et aspect ; whites: true = tenues blanches
+//   prestige                           1–5
+//   tournament                         id du tournoi associé (content/tournaments)
+//   camera { pos, look, fw, fh, cy }   surcharges de la caméra pour ce terrain
+//   model, skybox                      réservés à un futur rendu 3D (non utilisés par le rendu actuel)
+(function () {
+  const venue = (def) => Agasso.define('venue', def);
+  // Habillages partagés par plusieurs terrains
+  const RG = { wall: '#0d4a37', wallDark: '#093527', trim: '#c9553d', seat: '#2b5a4c', parasol: '#f1ece2', accent: '#d9663a', accentDeep: '#a8431c', kick: '#ffd9c2' };
+  const WIM = { whites: true, wall: '#143c2b', wallDark: '#0c2a1e', trim: '#6f47a8', seat: '#1f4b37', parasol: '#1d5a3c', accent: '#6f47a8', accentDeep: '#45246e', kick: '#e2d3f7' };
+  const USO = { court: '#2c5d9c', apron: '#3f7f58', wall: '#1b2f55', wallDark: '#12203c', seat: '#27364f', accent: '#2f6fd0', accentDeep: '#1b3f85', kick: '#cfe0ff' };
+  const AO = { court: '#2a6fb5', apron: '#5aa0d8', wall: '#123a6b', wallDark: '#0b2748', seat: '#1f3c5c', accent: '#1f8fd6', accentDeep: '#0f5a90', kick: '#cfeaff' };
+
+  // ---------- Grands Chelems ----------
+  venue({ id: 'roland-garros', order: 0, category: 'grand-slam', name: 'Roland-Garros', city: 'Paris', country: 'FRA', flag: '🇫🇷', surface: 'clay', style: 'arena', lighting: 'day',
+    capacity: 15000, prestige: 5, tournament: 'roland-garros', weather: { label: 'Ensoleillé', temperature: 24, wind: [0, 0] }, look: RG, skybox: 'paris-day', model: null });
+  venue({ id: 'wimbledon', order: 1, category: 'grand-slam', name: 'Wimbledon', city: 'Londres', country: 'GBR', flag: '🇬🇧', surface: 'grass', style: 'arena', lighting: 'day',
+    capacity: 15000, prestige: 5, tournament: 'wimbledon', weather: { label: 'Éclaircies', temperature: 20, wind: [0.4, 0] }, light: { clouds: 10 }, look: WIM, skybox: 'london-day', model: null });
+  venue({ id: 'us-open', order: 2, category: 'grand-slam', name: 'US Open', city: 'New York', country: 'USA', flag: '🇺🇸', surface: 'hard', speed: 6, style: 'arena', lighting: 'day',
+    capacity: 23000, prestige: 5, tournament: 'us-open', weather: { label: 'Chaud et humide', temperature: 29, wind: [0.5, 0] }, look: USO, skybox: 'new-york-day', model: null });
+  venue({ id: 'australian-open', order: 3, category: 'grand-slam', name: 'Australian Open', city: 'Melbourne', country: 'AUS', flag: '🇦🇺', surface: 'hard', style: 'arena', lighting: 'day',
+    capacity: 15000, prestige: 5, tournament: 'australian-open', weather: { label: 'Forte chaleur', temperature: 35, wind: [0, 0] }, conditions: 'Chaleur : balle un peu plus vive', physics: { pace: 1.015 }, look: AO, skybox: 'melbourne-day', model: null });
+
+  // ---------- Terrains historiques / emblématiques ----------
+  venue({ id: 'arthur-ashe', order: 10, category: 'iconic', name: 'Arthur Ashe Stadium', city: 'New York', country: 'USA', flag: '🇺🇸', surface: 'hard', speed: 6, style: 'arena', lighting: 'night',
+    capacity: 23771, prestige: 5, tournament: 'us-open', weather: { label: 'Nuit douce', temperature: 23, wind: [0, 0] }, conditions: 'Session de nuit', look: USO });
+  venue({ id: 'philippe-chatrier', order: 11, category: 'iconic', name: 'Court Philippe-Chatrier', city: 'Paris', country: 'FRA', flag: '🇫🇷', surface: 'clay', style: 'arena', lighting: 'dusk',
+    capacity: 15225, prestige: 5, tournament: 'roland-garros', weather: { label: 'Fin de journée', temperature: 21, wind: [0, 0] }, look: RG });
+  venue({ id: 'suzanne-lenglen', order: 12, category: 'iconic', name: 'Court Suzanne-Lenglen', city: 'Paris', country: 'FRA', flag: '🇫🇷', surface: 'clay', style: 'stadium', lighting: 'day',
+    capacity: 10068, prestige: 4, tournament: 'roland-garros', weather: { label: 'Ensoleillé', temperature: 23, wind: [0.3, 0] }, look: RG });
+  venue({ id: 'centre-court', order: 13, category: 'iconic', name: 'Centre Court Wimbledon', city: 'Londres', country: 'GBR', flag: '🇬🇧', surface: 'grass', style: 'arena', lighting: 'overcast',
+    capacity: 14979, prestige: 5, tournament: 'wimbledon', weather: { label: 'Couvert', temperature: 18, wind: [0.3, 0] }, look: WIM });
+  venue({ id: 'rod-laver', order: 14, category: 'iconic', name: 'Rod Laver Arena', city: 'Melbourne', country: 'AUS', flag: '🇦🇺', surface: 'hard', style: 'arena', lighting: 'night',
+    capacity: 14820, prestige: 5, tournament: 'australian-open', weather: { label: 'Nuit chaude', temperature: 27, wind: [0, 0] }, conditions: 'Session de nuit', look: AO });
+  venue({ id: 'foro-italico', order: 15, category: 'iconic', name: 'Foro Italico', city: 'Rome', country: 'ITA', flag: '🇮🇹', surface: 'clay', style: 'stadium', lighting: 'day',
+    capacity: 10500, prestige: 4, weather: { label: 'Ensoleillé', temperature: 26, wind: [0, 0] }, stadium: { backdrop: 'trees' },
+    look: { wall: '#2d4a3a', wallDark: '#1e3327', trim: null, seat: '#b9b2a0', accent: '#1f7a4d', accentDeep: '#135233', kick: '#d6f0e0' } });
+  venue({ id: 'monte-carlo', order: 16, category: 'iconic', name: 'Monte-Carlo Country Club', city: 'Monte-Carlo', country: 'MCO', flag: '🇲🇨', surface: 'clay', style: 'stadium', lighting: 'day',
+    capacity: 10200, prestige: 4, weather: { label: 'Brise marine', temperature: 20, wind: [0.8, 0] }, stadium: { backdrop: 'sea', rowsBack: 9 },
+    look: { wall: '#1d5a84', wallDark: '#123f5e', trim: '#f1ece2', seat: '#2f5f7f', accent: '#c8372d', accentDeep: '#8f231c', kick: '#ffd6d1' } });
+  venue({ id: 'caja-magica', order: 17, category: 'iconic', name: 'Caja Mágica', city: 'Madrid', country: 'ESP', flag: '🇪🇸', surface: 'clay', speed: 4.5, style: 'arena', lighting: 'day',
+    capacity: 12442, prestige: 4, weather: { label: 'Sec', temperature: 25, wind: [0, 0] }, conditions: 'Altitude 650 m : balle plus rapide', physics: { pace: 1.03 },
+    look: { wall: '#2b2f36', wallDark: '#1c1f24', trim: null, seat: '#3a3f48', accent: '#e0a020', accentDeep: '#a87410', kick: '#ffe9b8' } });
+  venue({ id: 'indian-wells', order: 18, category: 'iconic', name: 'Indian Wells', city: 'Californie', country: 'USA', flag: '🇺🇸', surface: 'hard', speed: 4.5, bounce: 9, style: 'arena', lighting: 'day',
+    capacity: 16100, prestige: 4, weather: { label: 'Sec et venteux', temperature: 30, wind: [1.6, 0.3] }, conditions: 'Désert : rebond haut, vent', stadium: { backdrop: 'hills', roof: false, upperAt: 0, rowsBack: 18 }, light: { clouds: 1 },
+    look: { court: '#5a3f8f', apron: '#3f7d57', wall: '#2a2444', wallDark: '#1c1830', seat: '#3a3552', accent: '#7a55c0', accentDeep: '#4d3285', kick: '#e3d6ff' } });
+  venue({ id: 'miami', order: 19, category: 'iconic', name: 'Miami Open', city: 'Miami', country: 'USA', flag: '🇺🇸', surface: 'hard', speed: 5, style: 'stadium', lighting: 'day',
+    capacity: 13800, prestige: 4, weather: { label: 'Humide', temperature: 28, wind: [0.7, 0] }, stadium: { backdrop: 'city' },
+    look: { court: '#2b5fa8', apron: '#2f8f8a', wall: '#0f4a55', wallDark: '#0a333b', seat: '#205a64', accent: '#16a3a0', accentDeep: '#0c6b69', kick: '#c9f5f2' } });
+  venue({ id: 'cincinnati', order: 20, category: 'iconic', name: 'Cincinnati', city: 'Cincinnati', country: 'USA', flag: '🇺🇸', surface: 'hard', speed: 6.5, style: 'stadium', lighting: 'day',
+    capacity: 11400, prestige: 3, weather: { label: 'Chaud', temperature: 30, wind: [0.3, 0] },
+    look: { court: '#2d5aa0', apron: '#27447a', wall: '#1d2f52', wallDark: '#131f38', seat: '#2c3d5c', accent: '#3b7be0', accentDeep: '#234f9a', kick: '#d3e2ff' } });
+  venue({ id: 'shanghai', order: 21, category: 'iconic', name: 'Shanghai', city: 'Shanghai', country: 'CHN', flag: '🇨🇳', surface: 'hard', speed: 6.5, style: 'arena', lighting: 'dusk',
+    capacity: 15000, prestige: 3, weather: { label: 'Doux', temperature: 22, wind: [0, 0] },
+    look: { court: '#3b4fa0', apron: '#3f7d57', wall: '#2a2f5a', wallDark: '#1b1f3d', seat: '#3a3f66', accent: '#c8372d', accentDeep: '#8f231c', kick: '#ffd6d1' } });
+  venue({ id: 'tokyo', order: 22, category: 'iconic', name: 'Tokyo', city: 'Tokyo', country: 'JPN', flag: '🇯🇵', surface: 'hard', speed: 6, style: 'stadium', lighting: 'day',
+    capacity: 10000, prestige: 3, weather: { label: 'Clair', temperature: 23, wind: [0.2, 0] }, stadium: { backdrop: 'city' },
+    look: { court: '#2f6aa8', apron: '#4a8f5a', wall: '#1f2a3a', wallDark: '#141c28', seat: '#33404f', accent: '#d1423c', accentDeep: '#93281f', kick: '#ffd9d6' } });
+  venue({ id: 'paris-bercy', order: 23, category: 'iconic', name: 'Paris-Bercy', city: 'Paris', country: 'FRA', flag: '🇫🇷', surface: 'indoor_hard', speed: 7.5, style: 'indoor', lighting: 'indoor',
+    capacity: 15500, prestige: 4, weather: { label: 'Salle', temperature: 21, wind: [0, 0] }, conditions: 'Indoor : aucun vent, rebond régulier',
+    look: { court: '#2e3f6e', apron: '#1f2630', wall: '#15181e', wallDark: '#0d0f13', seat: '#262b36', accent: '#3b82f6', accentDeep: '#1f56b8', kick: '#d3e4ff' } });
+
+  // ---------- Terrains supplémentaires ----------
+  venue({ id: 'indoor-court', order: 30, category: 'extra', name: 'Court indoor', surface: 'indoor_hard', style: 'hall', lighting: 'indoor', capacity: 800, prestige: 1, weather: { label: 'Salle', temperature: 20, wind: [0, 0] },
+    look: { wall: '#1c2028', wallDark: '#12151b', seat: '#2a303b', accent: '#3aa0a0', accentDeep: '#226a6a', kick: '#cdf2f2' } });
+  venue({ id: 'outdoor-hard', order: 31, category: 'extra', name: 'Court outdoor', surface: 'hard', style: 'club', lighting: 'day', capacity: 600, prestige: 1, weather: { label: 'Clair', temperature: 22, wind: [0.6, 0] },
+    look: { wall: '#24402f', wallDark: '#182c20', seat: '#3a4a40', accent: '#3b7be0', accentDeep: '#234f9a', kick: '#d3e2ff' } });
+  venue({ id: 'night-hard', order: 32, category: 'extra', name: 'Court de nuit (dur)', surface: 'hard', style: 'stadium', lighting: 'night', capacity: 3000, prestige: 2, weather: { label: 'Nuit claire', temperature: 19, wind: [0, 0] }, stadium: { backdrop: null },
+    look: { wall: '#1b2740', wallDark: '#111a2c', seat: '#263249', accent: '#3b7be0', accentDeep: '#234f9a', kick: '#d3e2ff' } });
+  venue({ id: 'night-clay', order: 33, category: 'extra', name: 'Court de nuit (terre battue)', surface: 'clay', style: 'stadium', lighting: 'night', capacity: 3000, prestige: 2, weather: { label: 'Nuit fraîche', temperature: 16, wind: [0, 0] }, conditions: 'Terre fraîche : rebond un peu plus bas', bounce: 9, stadium: { backdrop: null },
+    look: { wall: '#123a2d', wallDark: '#0b271e', seat: '#24493d', accent: '#d9663a', accentDeep: '#a8431c', kick: '#ffd9c2' } });
+  venue({ id: 'small-clay', order: 34, category: 'extra', name: 'Petit court extérieur (terre battue)', surface: 'clay', style: 'club', lighting: 'day', capacity: 400, prestige: 1, weather: { label: 'Ensoleillé', temperature: 23, wind: [0.5, 0] },
+    look: { wall: '#1f4a35', wallDark: '#143224', seat: '#3a5a48', accent: '#d9663a', accentDeep: '#a8431c', kick: '#ffd9c2' } });
+  venue({ id: 'small-grass', order: 35, category: 'extra', name: 'Petit court extérieur (gazon)', surface: 'grass', style: 'club', lighting: 'day', capacity: 400, prestige: 1, weather: { label: 'Éclaircies', temperature: 19, wind: [0.7, 0] }, light: { clouds: 9 },
+    look: { wall: '#1a3d2a', wallDark: '#11281b', seat: '#2f4d3a', accent: '#3f9a5a', accentDeep: '#27683b', kick: '#d6f5df' } });
+})();

@@ -1,21 +1,21 @@
 // Chef d'orchestre du rendu : assemble décor, joueurs, balle, filet, effets, et pilote la caméra.
 // Ne fait que LIRE l'état du match. Options : { camera: 'tv'|'court', scale: 0.6…1.5 }.
 (function (root) {
-  const A = root.Agasso, { COURT, clamp, lerp } = A, SUN = A.SUN;
+  const A = root.Agasso, { COURT, clamp, lerp } = A;
 
   class Renderer {
     constructor(canvas, opts) {
       this.cv = canvas; this.ctx = canvas.getContext('2d');
       this.bg = document.createElement('canvas');
       this.view = new A.View(); this.vfx = new A.Vfx();
-      this.venue = A.all('venue')[0];
+      this.venue = A.Venues.all()[0];
       this.opts = Object.assign({ camera: 'tv', scale: 1 }, opts);
       this.trail = []; this.cheer = 0; this.fans = []; this.time = 0; this.cam = { x: 0, y: 0, z: 1 }; this.dustT = 0;
       this.resize();
     }
 
     configure(opts) { Object.assign(this.opts, opts); this.resize(); }
-    setVenue(id) { const v = A.get('venue', id) || this.venue; if (v !== this.venue) { this.venue = v; this.vfx.clear(); this.paint(); } }
+    setVenue(id) { const v = A.get('venue', id) ? A.Venues.get(id) : this.venue; if (v !== this.venue) { this.venue = v; this.vfx.clear(); this.resize(); } }
 
     resize() {
       const w = this.cv.clientWidth || 1280, h = this.cv.clientHeight || 720;
@@ -24,7 +24,7 @@
       this.W = w; this.H = h; this.M = Math.round(w * 0.05);
       this.cv.width = Math.round(w * this.px); this.cv.height = Math.round(h * this.px);
       this.bg.width = Math.round((w + 2 * this.M) * this.px); this.bg.height = Math.round((h + 2 * this.M) * this.px);
-      this.view.setup(w, h, this.opts.camera);
+      this.view.setup(w, h, this.opts.camera, this.venue.camera); // le terrain peut surcharger la caméra
       this.paint();
     }
 
@@ -80,13 +80,17 @@
       }
       // Ombres portées : contact au sol + silhouette allongée par le soleil
       c.lineCap = 'round';
+      const li = this.venue.lighting, sun = li.sun, casts = sun ? [[sun[0], sun[1], li.shadow]] : li.floodlights ? [[0.5, 0.3, li.shadow], [-0.5, 0.3, li.shadow], [0.5, -0.3, li.shadow], [-0.5, -0.3, li.shadow]] : [];
       for (const pl of g.players) {
-        const p = v.P(pl.x, pl.y, 0), h = v.P(pl.x + SUN.x * 1.75, pl.y + SUN.y * 1.75, 0);
-        c.strokeStyle = 'rgba(22,10,24,.2)'; c.lineWidth = p.s * 0.44; c.beginPath(); c.moveTo(p.x, p.y); c.lineTo(h.x, h.y); c.stroke();
-        c.strokeStyle = 'rgba(22,10,24,.14)'; c.lineWidth = p.s * 0.3; c.beginPath(); c.moveTo(p.x, p.y); c.lineTo(lerp(p.x, h.x, 0.6), lerp(p.y, h.y, 0.6)); c.stroke();
+        const p = v.P(pl.x, pl.y, 0);
+        for (const [sx, sy, a] of casts) { // soleil : une ombre longue ; projecteurs : quatre ombres courtes
+          const h = v.P(pl.x + sx * 1.75, pl.y + sy * 1.75, 0);
+          c.strokeStyle = `rgba(22,10,24,${a * 0.75})`; c.lineWidth = p.s * 0.44; c.beginPath(); c.moveTo(p.x, p.y); c.lineTo(h.x, h.y); c.stroke();
+          c.strokeStyle = `rgba(22,10,24,${a * 0.5})`; c.lineWidth = p.s * 0.3; c.beginPath(); c.moveTo(p.x, p.y); c.lineTo(lerp(p.x, h.x, 0.6), lerp(p.y, h.y, 0.6)); c.stroke();
+        }
         c.fillStyle = 'rgba(22,10,24,.3)'; c.beginPath(); c.ellipse(p.x, p.y, p.s * 0.3, p.s * 0.09, 0, 0, 7); c.fill();
       }
-      { const p = v.P(b.x + SUN.x * b.z * 0.5, b.y + SUN.y * b.z * 0.5, 0); c.fillStyle = 'rgba(22,10,24,.4)'; c.beginPath(); c.ellipse(p.x, p.y, p.s * 0.12, p.s * 0.045, 0, 0, 7); c.fill(); }
+      { const sx = sun ? sun[0] : 0, sy = sun ? sun[1] : 0, p = v.P(b.x + sx * b.z * 0.5, b.y + sy * b.z * 0.5, 0); c.fillStyle = 'rgba(22,10,24,.4)'; c.beginPath(); c.ellipse(p.x, p.y, p.s * 0.12, p.s * 0.045, 0, 0, 7); c.fill(); }
       // Poussière sous les appuis rapides (terre battue)
       if (this.venue.look.mark && (this.dustT += dt) > 0.07) { this.dustT = 0; for (const pl of g.players) if (Math.hypot(pl.vx, pl.vy) > pl.a.speed * 0.8) vfx.scuff(pl.x, pl.y, this.venue.look.dust); }
 

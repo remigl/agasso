@@ -17,14 +17,15 @@
     }));
   }
 
-  const affinity = (p, venue) => clamp((p.def.surfaces && venue && p.def.surfaces[venue.surface]) || 0, -1, 1);
+  // Affinité avec la surface : cherchée par id de surface, puis par famille (indoor_hard → hard).
+  const affinity = (p, venue) => { const s = p.def.surfaces; return clamp((s && venue && (s[venue.surface] != null ? s[venue.surface] : s[venue.family])) || 0, -1, 1); };
 
   // Attributs physiques du joueur sur un terrain donné (unités du moteur).
   function attrs(p, venue) {
     const B = A.BASE, E = A.STAT_EFFECT, k = (s) => p.stats[s] - B.pivot, aff = affinity(p, venue);
     const power = 1 + E.force * k('force'), move = (1 + E.speed * k('speed')) * (1 + 0.015 * aff), srv = 1 + E.serve * k('serve');
     return Object.freeze({
-      speed: B.speed * move, accel: B.accel * move * p.tech.movement.accel,
+      speed: B.speed * move, accel: B.accel * move * p.tech.movement.accel * venue.physics.traction,
       reach: B.reach * (1 + 0.01 * k('defense')), reachZ: B.reachZ,
       flat: B.flat * power, volley: B.volley * power, slice: B.slice * power, smash: B.smash * power, lob: B.lob, drop: B.drop,
       serve1: B.serve1 * srv, serve2: B.serve2 * (1 + E.serve * 0.5 * k('serve')),

@@ -70,9 +70,26 @@ p { margin: 0; color: var(--mute); font-size: clamp(13px, 1.8vh, 16px); line-hei
 .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: auto; padding-top: 8px; }
 .tags span { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; padding: .35em .7em; border: 1px solid var(--line); border-radius: 2px; color: var(--text); }
 
-/* Avant-match */
-.vs { display: flex; align-items: center; gap: 3vw; }
-.vs-side { width: min(250px, 26vw); text-align: center; }
+/* Avant-match et choix du terrain */
+.setup-body { display: flex; gap: 2vw; align-items: stretch; width: min(1200px, 95vw); max-height: 58vh; }
+.vs { display: flex; align-items: center; gap: 1.2vw; }
+.vs-side { width: min(150px, 13vw); text-align: center; }
+.vs-side h3 { font-size: clamp(14px, 2.2vh, 20px); }
+.vlist { flex: 1; min-width: 0; overflow: auto; padding: 2px 6px 2px 2px; }
+.vlist label { display: block; font-size: 11px; letter-spacing: .24em; text-transform: uppercase; color: var(--mute); margin: 10px 0 6px; }
+.vlist label:first-child { margin-top: 0; }
+.vbtns { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 5px; }
+.vbtns button { font: inherit; font-size: clamp(12px, 1.7vh, 14px); font-weight: 600; letter-spacing: .04em; text-transform: uppercase; text-align: left; color: var(--mute); cursor: pointer; display: flex; align-items: center; gap: 9px;
+  padding: .6em .8em; background: var(--panel); border: 1px solid var(--line); border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vbtns i { flex: none; width: 12px; height: 12px; border-radius: 2px; border: 1px solid rgba(255, 255, 255, .5); }
+.vbtns button:hover, .vbtns button:focus-visible { outline: none; border-color: var(--text); color: var(--text); }
+.vbtns button.on { background: var(--text); color: var(--ink); border-color: var(--text); }
+.vinfo { width: min(300px, 26vw); padding: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 3px; display: flex; flex-direction: column; gap: 8px; }
+.vinfo h3 { font-size: clamp(17px, 2.6vh, 24px); }
+.vrows { display: grid; gap: 5px; font-size: clamp(11px, 1.6vh, 13px); }
+.vrows div { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+.vrows span { color: var(--mute); letter-spacing: .12em; text-transform: uppercase; font-size: .88em; }
+.vrows b { font-weight: 600; text-align: right; }
 .vs-side canvas { width: 100%; aspect-ratio: 300 / 380; margin-bottom: 10px; }
 .vs-x { font-size: clamp(22px, 4vh, 40px); font-weight: 300; color: var(--mute); letter-spacing: .2em; }
 .opts { display: flex; gap: 14px 30px; flex-wrap: wrap; justify-content: center; }

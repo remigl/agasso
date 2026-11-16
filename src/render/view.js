@@ -10,8 +10,8 @@
   };
 
   class View {
-    setup(w, h, preset) {
-      const cam = A.CAMERAS[preset] || A.CAMERAS.tv, C = (this.C = cam.pos), T = cam.look;
+    setup(w, h, preset, override) {
+      const cam = Object.assign({}, A.CAMERAS[preset] || A.CAMERAS.tv, override), C = (this.C = cam.pos), T = cam.look;
       this.W = w; this.H = h;
       this.f = Math.min(w * cam.fw, h * cam.fh); this.cx = w / 2; this.cy = h * 0.5 + this.f * cam.cy;
       let F = [T[0] - C[0], T[1] - C[1], T[2] - C[2]]; const l = Math.hypot(...F); F = F.map((v) => v / l);
@@ -41,6 +41,5 @@
   }
 
   A.View = View;
-  A.SUN = { x: -0.55, y: 0.3 }; // déplacement de l'ombre au sol par mètre de hauteur
   A.FONT = 'Bahnschrift, "DIN Alternate", "Roboto Condensed", "Arial Narrow", system-ui, sans-serif';
 })(typeof window !== 'undefined' ? window : globalThis);

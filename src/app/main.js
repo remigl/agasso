@@ -3,13 +3,14 @@
   const A = window.Agasso, S = A.Scoring, UI = A.UI, Sfx = A.Sfx, Set = A.Settings, Store = A.Store, T = A.Tournament;
   const renderer = new A.Renderer(document.querySelector('#game'));
   const desktop = /Electron/i.test(navigator.userAgent);
-  const app = { mode: 'amical', step: 'player', player: Store.get('player', 'remi'), opponent: 'agasso', venue: A.all('venue')[0].id, format: 'express', tid: null, tour: Store.get('tournament', null), optionsFrom: 'title' };
+  const app = { mode: 'amical', step: 'player', player: Store.get('player', 'remi'), opponent: 'agasso', venue: A.Venues.ids()[0], format: 'express', tid: null, tour: Store.get('tournament', null), optionsFrom: 'title' };
   if (!A.get('player', app.player)) app.player = 'remi';
+  if (A.get('venue', Store.get('venue', ''))) app.venue = Store.get('venue');
   if (app.tour && !A.get('tournament', app.tour.tid)) app.tour = null;
   let game = null, ais = [null, null], human = -1, cele = null, live = null; // live = paramètres du match en cours
   let last = 0, acc = 0, slowT = 0, speedT = 0, serveSpeed = 0, headline = '', cheerT = 0;
 
-  const venue = () => A.need('venue', app.venue);
+  const venue = () => A.Venues.get(app.venue);
   const music = (role) => { const m = A.all('music').find((x) => x.role === role); if (m && +Set.get('music') > 0) A.Music.play(m.id); else A.Music.stop(); };
 
   function applySettings() {
@@ -17,7 +18,7 @@
     A.AudioEngine.setVolume('sfx', +Set.get('sfx')); A.Music.setVolume(+Set.get('music')); Sfx.setVoice(Set.get('voice') === 'on');
     if (+Set.get('music') === 0) A.Music.stop();
   }
-  function setVenue(id) { app.venue = id; renderer.setVenue(id); UI.theme(venue()); }
+  function setVenue(id) { app.venue = id; renderer.setVenue(id); UI.theme(venue()); Sfx.setCrowd(venue().crowd); }
 
   // ---------- Parties ----------
   function startDemo() { // match IA contre IA en fond de menu
@@ -78,7 +79,7 @@
       if (s === 'pause') return actions.resume();
       goTitle();
     },
-    'set-venue'(d) { setVenue(d.val); startDemo(); openSetup(); },
+    'set-venue'(d) { setVenue(d.val); Store.set('venue', d.val); startDemo(); openSetup(); const b = document.querySelector(`.s-setup [data-act="set-venue"][data-val="${d.val}"]`); if (b) b.focus({ preventScroll: true }); },
     'set-format'(d) { app.format = d.val; openSetup(); },
     start() { startMatch({ players: [app.player, app.opponent], venue: app.venue, format: A.FORMATS[app.format], headline: venue().name + ' · Match amical' }); },
     options() { app.optionsFrom = UI.screen === 'pause' ? 'pause' : 'title'; UI.options(); UI.show('options'); },

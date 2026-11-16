@@ -7,7 +7,7 @@
 
   // Nouveau tournoi pour `playerId`. Renvoie l'état initial.
   function create(tid, playerId, rng) {
-    const def = A.need('tournament', tid), venue = A.need('venue', def.venue), r = rng || Math.random;
+    const def = A.need('tournament', tid), venue = A.Venues.get(def.venue), r = rng || Math.random;
     const pool = (def.field === 'all' ? A.Players.ids() : def.field.slice()).filter((id) => id !== playerId);
     for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
     const field = [playerId].concat(pool.slice(0, def.drawSize - 1));
@@ -46,7 +46,7 @@
   }
 
   function advance(st, rng) {
-    const def = defOf(st), venue = A.need('venue', def.venue), round = st.rounds[st.round];
+    const def = defOf(st), venue = A.Venues.get(def.venue), round = st.rounds[st.round];
     for (const m of round) if (!m.w) { const q = quickSim(m.a, m.b, venue, formatOf(st, st.round), rng); m.w = q.winner; m.score = q.score; }
     if (round.length === 1) return false;
     const next = [];

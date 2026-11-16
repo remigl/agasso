@@ -36,7 +36,7 @@ test('l’état du tournoi est sérialisable (sauvegarde) et reprend à l’iden
 });
 
 test('matchs simulés : le mieux noté gagne plus souvent, sans gagner toujours', () => {
-  const rng = A.rngFrom(1), venue = A.get('venue', 'roland-garros'); let w = 0;
+  const rng = A.rngFrom(1), venue = A.Venues.get('roland-garros'); let w = 0;
   for (let i = 0; i < 400; i++) if (T.quickSim('nadal', 'eric', venue, A.FORMATS.set1, rng).winner === 'nadal') w++;
   assert.ok(w > 240 && w < 395, 'victoires de Nadal : ' + w + '/400');
 });

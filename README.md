@@ -1,7 +1,7 @@
 # Agasso Tennis Generation
 
-Jeu de tennis pour Windows : 24 joueurs aux styles distincts, mode Tournoi, match amical, deux terrains
-(Roland-Garros sur terre battue, Wimbledon sur gazon).
+Jeu de tennis pour Windows : 24 joueurs aux styles distincts, mode Tournoi, match amical, 24 terrains
+sur quatre surfaces (terre battue, gazon, dur, dur indoor).
 
 ## Jouer
 
@@ -30,7 +30,8 @@ Tout le contenu vit dans `content/`, un fichier par élément. Le moteur le déc
 | --- | --- | --- |
 | un joueur | `content/players/<id>.js` | `content/players/federer.js` |
 | un style de jeu | `content/archetypes/<id>.js` | `content/archetypes/serve-volley.js` |
-| un terrain | `content/venues/<id>.js` | `content/venues/wimbledon.js` |
+| un terrain | une entrée dans `content/venues/venues.js` | voir ci-dessous |
+| une surface, un style de stade, un éclairage | une entrée dans `content/venues/surfaces.js` ou `presets.js` | les entrées existantes |
 | un tournoi | `content/tournaments/<id>.js` | `content/tournaments/roland-garros.js` |
 | une musique | `content/music/<id>.js` | `content/music/menu-anthem.js` |
 | une célébration | `content/celebrations/<id>.js` | `content/celebrations/leap.js` |
@@ -53,7 +54,30 @@ Agasso.define('player', {
 - **Statistiques (1–10)** : leur poids est réglé dans `src/config/game.js` (`STAT_EFFECT`) et reste volontairement modéré.
 - **Signature** : `technique` (vitesse `pace`, effet `spin` de −1 slice à +1 lift, précision `margin` par coup, prise de balle tôt, revers à une ou deux mains, préparation, déplacement) et `ai` (agressivité, prise de risque, montées au filet, service-volée, lob, amortie, slice, placement). Les valeurs par défaut sont dans `src/config/game.js`, celles des styles dans `content/archetypes/`.
 - **Musique** : pour remplacer une piste par un fichier, renseigner `file: 'assets/music/mon-morceau.mp3'` dans sa fiche. Les pistes fournies sont des compositions originales jouées par un synthétiseur intégré.
-- **Terrain** : `physics` (rebond) est lu par le gameplay, `look` (couleurs, bandes de gazon, traces) uniquement par le rendu.
+### Terrains
+
+Tous les terrains sont dans `content/venues/venues.js`. Le minimum est `{ id, name, surface }` ; le reste est hérité
+de la surface (`clay`, `grass`, `hard`, `indoor_hard`), du style de stade et de l'éclairage, et peut être surchargé :
+
+```js
+venue({ id: 'bastad', name: 'Båstad', city: 'Båstad', country: 'SWE', category: 'iconic', surface: 'clay',
+  speed: 3.5, bounce: 9,                                   // 1–10, sinon ceux de la surface
+  weather: { label: 'Brise marine', temperature: 19, wind: [1, 0] },   // le vent dévie la balle
+  lighting: 'dusk', style: 'stadium', stadium: { backdrop: 'sea' },
+  capacity: 5000, prestige: 3, look: { wall: '#1d5a84', accent: '#e0a020' } });
+```
+
+| Champ | Lu par | Effet |
+| --- | --- | --- |
+| `surface`, `speed`, `bounce`, `physics` (`pace`, `traction`) | gameplay | rebond, vitesse de balle, accroche des appuis, affinité des joueurs |
+| `weather.wind` | gameplay | dévie la balle en vol (jamais en salle) |
+| `lighting`, `light` | rendu | jour, couvert, fin de journée, nuit, salle : soleil, ombres, projecteurs, ciel |
+| `style`, `stadium` | rendu | gradins, second niveau, toit, public, arrière-plan, décor |
+| `look` | rendu et interface | couleurs du court et des abords, murs, sièges, accent ; `whites` = tenues blanches |
+| `capacity`, `ambience` | son | volume du public |
+| `camera` | rendu | surcharge de la caméra pour ce terrain |
+| `prestige`, `tournament`, `conditions`, `city`, `country` | interface | fiche du terrain |
+| `model`, `skybox` | — | réservés à un futur rendu 3D, non utilisés par le rendu 2D actuel |
 
 ## Architecture
 
@@ -61,6 +85,7 @@ Agasso.define('player', {
 content/            données : joueurs, archétypes, terrains, tournois, musiques, célébrations
 src/core/           registre de contenu (Agasso.define / get / all), utilitaires
 src/config/         réglages du moteur : court, attributs de base, poids des stats, difficulté, formats
+src/venues/         entrée de données → terrain complet (surface ⊕ style ⊕ éclairage ⊕ surcharges)
 src/gameplay/       scoring · physics (balle, rebond) · shots (résolution des coups) · match (un match)
 src/players/        fiche de données → profil (stats, technique, comportement) → attributs physiques
 src/ai/             cerveau générique, paramétré par le profil et la difficulté
@@ -82,7 +107,7 @@ Le rendu et le son ne font que lire l'état du match et ses événements : on pe
 ```
 npm install        # Electron + electron-builder
 npm start          # lance le jeu
-npm test           # 23 tests, sans dépendance
+npm test           # 25 tests, sans dépendance
 npm run simulate -- nadal federer 20 roland-garros   # duel IA contre IA
 npm run simulate -- --ligue wimbledon                # tout le monde contre tout le monde
 npm run dist       # fabrique les .exe Windows dans dist/
