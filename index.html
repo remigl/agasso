@@ -3,88 +3,43 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
-<title>Agasso Tennis Generation 2026</title>
-<link rel="stylesheet" href="src/style.css">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'">
+<title>Agasso Tennis Generation</title>
+<link rel="stylesheet" href="src/ui/ui.css">
 </head>
 <body>
 <canvas id="game"></canvas>
-<div id="vignette"></div>
+<div id="grade"></div>
+<div id="ui"></div>
 
-<div id="hud" class="hidden">
-  <div id="score"></div>
-  <div id="chips"></div>
-  <div id="banner"><div id="banner-main"></div><div id="banner-sub"></div></div>
-  <div id="hint"></div>
-</div>
-
-<section id="title" class="screen">
-  <div class="brand">
-    <div class="kicker" id="kicker"></div>
-    <h1>AGASSO</h1>
-    <div class="sub">Tennis Generation</div>
-  </div>
-  <div class="menu">
-    <button data-nav data-act="play" class="btn primary">Jouer</button>
-    <button data-nav data-act="fullscreen" class="btn">Plein écran</button>
-    <button data-nav data-act="quit" class="btn desktop-only">Quitter</button>
-  </div>
-  <div class="legend">
-    <span><b>Flèches / ZQSD</b> se déplacer et viser</span>
-    <span><b>Espace</b> frappe · service</span>
-    <span><b>C</b> lob</span>
-    <span><b>V</b> amortie</span>
-    <span><b>Échap</b> pause</span>
-    <span class="pad"><b>Manette</b> stick · A frappe · B lob · X amortie · Start pause</span>
-  </div>
-</section>
-
-<section id="select" class="screen hidden">
-  <h2>Choisis ton joueur</h2>
-  <p class="note">Mêmes statistiques pour tout le monde, Agasso compris : seul ton jeu fait la différence.</p>
-  <div class="cards" id="cards"></div>
-  <div class="opts">
-    <div class="opt"><label>Tournoi</label><div class="seg" id="seg-venue"></div></div>
-    <div class="opt"><label>Difficulté</label><div class="seg" id="seg-diff"></div></div>
-    <div class="opt"><label>Format</label><div class="seg" id="seg-format"></div></div>
-  </div>
-  <div class="menu row">
-    <button data-nav data-act="back" class="btn">Retour</button>
-    <button data-nav data-act="start" class="btn primary" id="btn-start">Entrer sur le court</button>
-  </div>
-</section>
-
-<section id="pause" class="screen dim hidden">
-  <h2>Pause</h2>
-  <div class="menu">
-    <button data-nav data-act="resume" class="btn primary">Reprendre</button>
-    <button data-nav data-act="restart" class="btn">Recommencer le match</button>
-    <button data-nav data-act="sound" class="btn" id="btn-sound"></button>
-    <button data-nav data-act="voice" class="btn" id="btn-voice"></button>
-    <button data-nav data-act="fullscreen" class="btn">Plein écran</button>
-    <button data-nav data-act="menu" class="btn">Menu principal</button>
-  </div>
-</section>
-
-<section id="end" class="screen dim hidden">
-  <div class="kicker" id="end-kicker"></div>
-  <h2 id="end-title"></h2>
-  <div id="end-score"></div>
-  <table id="end-stats"></table>
-  <div class="menu row">
-    <button data-nav data-act="menu" class="btn">Menu principal</button>
-    <button data-nav data-act="select" class="btn">Changer de joueur</button>
-    <button data-nav data-act="restart" class="btn primary">Revanche</button>
-  </div>
-</section>
-
-<script src="src/config.js"></script>
-<script src="src/scoring.js"></script>
-<script src="src/sim.js"></script>
-<script src="src/ai.js"></script>
-<script src="src/audio.js"></script>
-<script src="src/input.js"></script>
-<script src="src/render.js"></script>
-<script src="src/main.js"></script>
+<!-- Noyau et configuration -->
+<script src="src/core/core.js"></script>
+<script src="src/config/game.js"></script>
+<!-- Contenu (généré depuis content/ par tools/build-content.js) -->
+<script src="content/_bundle.js"></script>
+<!-- Gameplay, joueurs, IA, tournoi : aucune dépendance au rendu ni à l'interface -->
+<script src="src/gameplay/scoring.js"></script>
+<script src="src/gameplay/physics.js"></script>
+<script src="src/players/profile.js"></script>
+<script src="src/gameplay/shots.js"></script>
+<script src="src/gameplay/match.js"></script>
+<script src="src/ai/ai.js"></script>
+<script src="src/tournament/bracket.js"></script>
+<!-- Audio -->
+<script src="src/audio/engine.js"></script>
+<script src="src/audio/sfx.js"></script>
+<script src="src/audio/music.js"></script>
+<!-- Rendu (remplaçable sans toucher au reste) -->
+<script src="src/render/view.js"></script>
+<script src="src/render/figure.js"></script>
+<script src="src/render/anim.js"></script>
+<script src="src/render/stadium.js"></script>
+<script src="src/render/vfx.js"></script>
+<script src="src/render/renderer.js"></script>
+<!-- Application : réglages, entrées, interface, déroulé -->
+<script src="src/app/settings.js"></script>
+<script src="src/app/input.js"></script>
+<script src="src/ui/screens.js"></script>
+<script src="src/app/main.js"></script>
 </body>
 </html>

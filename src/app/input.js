@@ -1,10 +1,10 @@
 // Entrées clavier + manette, fusionnées dans une seule structure.
 (function (root) {
-  const A = (root.Agasso = root.Agasso || {});
+  const A = root.Agasso;
   const down = new Set(), edges = new Set();
   const MAP = {
     up: ['ArrowUp', 'KeyW'], down: ['ArrowDown', 'KeyS'], left: ['ArrowLeft', 'KeyA'], right: ['ArrowRight', 'KeyD'],
-    hit: ['Space', 'KeyJ', 'KeyX'], lob: ['KeyK', 'KeyC'], drop: ['KeyL', 'KeyV'],
+    hit: ['Space', 'KeyJ', 'KeyX'], lob: ['KeyK', 'KeyC'], drop: ['KeyL', 'KeyV'], slice: ['KeyB', 'KeyM'],
     pause: ['Escape', 'KeyP'], ok: ['Enter', 'NumpadEnter'],
   };
   const GAME_KEYS = new Set([].concat(...Object.values(MAP)));
@@ -23,10 +23,10 @@
 
   // À appeler une fois par image. Les champs *Edge ne sont vrais que l'image de l'appui.
   function poll() {
-    const o = { mx: 0, my: 0, hit: false, lob: false, drop: false, pause: false, ok: false, navX: 0, navY: 0, analog: false };
+    const o = { mx: 0, my: 0, hit: false, lob: false, drop: false, slice: false, pause: false, ok: false, navX: 0, navY: 0, analog: false };
     o.mx = (held('right') ? 1 : 0) - (held('left') ? 1 : 0);
     o.my = (held('down') ? 1 : 0) - (held('up') ? 1 : 0);
-    o.hit = pressed('hit'); o.lob = pressed('lob'); o.drop = pressed('drop'); o.pause = pressed('pause'); // Entrée active nativement le bouton focalisé
+    o.hit = pressed('hit'); o.lob = pressed('lob'); o.drop = pressed('drop'); o.slice = pressed('slice'); o.pause = pressed('pause'); // Entrée active nativement le bouton focalisé
     o.navX = (pressed('right') ? 1 : 0) - (pressed('left') ? 1 : 0);
     o.navY = (pressed('down') ? 1 : 0) - (pressed('up') ? 1 : 0);
     edges.clear();
@@ -43,7 +43,8 @@
       if (ax || ay) { o.mx = ax; o.my = ay; o.analog = true; lastDevice = 'manette'; }
       if (now.l || now.r || now.u || now.d) { o.mx = (now.r ? 1 : 0) - (now.l ? 1 : 0); o.my = (now.d ? 1 : 0) - (now.u ? 1 : 0); }
       if (edge('a')) { o.hit = true; o.ok = true; lastDevice = 'manette'; }
-      if (edge('b') || edge('y')) o.lob = true;
+      if (edge('b')) o.lob = true;
+      if (edge('y')) o.slice = true;
       if (edge('x')) o.drop = true;
       if (edge('start')) o.pause = true;
       o.navX += (edge('r') || edge('sr') ? 1 : 0) - (edge('l') || edge('sl') ? 1 : 0);

@@ -2,10 +2,13 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 
+// La musique du menu démarre dès le lancement, sans attendre un clic.
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1280, height: 720, minWidth: 800, minHeight: 500,
-    backgroundColor: '#0b1512', title: 'Agasso Tennis Generation 2026',
+    backgroundColor: '#0b1512', title: 'Agasso Tennis Generation',
     autoHideMenuBar: true, show: false,
     webPreferences: { contextIsolation: true, nodeIntegration: false, backgroundThrottling: false },
   });

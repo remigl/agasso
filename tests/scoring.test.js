@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert');
-require('../src/config.js'); require('../src/scoring.js');
+require('../tools/load.js');
 const S = globalThis.Agasso.Scoring;
 const win = (m, who, n) => { let ev = []; for (let i = 0; i < n; i++) ev = S.pointWon(m, who); return ev; };
 
